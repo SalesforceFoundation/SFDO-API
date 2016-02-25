@@ -1,6 +1,7 @@
 require 'SFDO/API/version'
 
 module SfdoAPI
+
   def api_client
     @api_client ||= Restforce.new api_version: '32.0',
                                   refresh_token: ENV['SF_REFRESH_TOKEN'],
@@ -10,6 +11,9 @@ module SfdoAPI
   end
 
   def create(type, obj_hash)
+    # TODO: NEED TO PASS @fields_acceptibly_nil to this Module from the calling code
+    @fields_acceptibly_nil = { 'Contact': ['Name'],
+                               'Opportunity': ['ForecastCategory'] }
     if is_valid_obj_hash?(type, obj_hash, @fields_acceptibly_nil)
       obj_id = api_client do
         @api_client.create! type, obj_hash
@@ -23,9 +27,11 @@ module SfdoAPI
     #   [name, id, required_field_1__c, etc]
     valid = true
     required_fields.each do |f|
-      valid = false unless obj_hash.key? f.to_sym && (begin
+
+      valid = false if (!obj_hash.key? f.to_sym) && (begin
         !fields_acceptibly_nil[object_name].contains? f
       rescue
+        puts 'This field must be populated in order to create this object in this environment: ' +  f.inspect
         false
       end)
     end
@@ -48,3 +54,5 @@ module SfdoAPI
     end
   end
 end
+
+include SfdoAPI
