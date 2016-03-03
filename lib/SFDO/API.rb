@@ -11,9 +11,6 @@ module SfdoAPI
   end
 
   def create(type, obj_hash)
-    # TODO: NEED TO PASS @fields_acceptibly_nil to this Module from the calling code
-    @fields_acceptibly_nil = { 'Contact': ['Name'],
-                               'Opportunity': ['ForecastCategory'] }
     if is_valid_obj_hash?(type, obj_hash, @fields_acceptibly_nil)
       obj_id = api_client do
         @api_client.create! type, obj_hash
