@@ -30,8 +30,8 @@ module SfdoAPI
 
       valid = false if (!obj_hash.key? f.to_sym) && (begin
         !fields_acceptibly_nil[object_name].contains? f
-      rescue
         puts 'This field must be populated in order to create this object in this environment: ' +  f.inspect
+      rescue
         false
       end)
     end
