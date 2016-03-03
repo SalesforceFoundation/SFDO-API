@@ -1,8 +1,7 @@
 # SFDO::API
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/SFDO/API`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+SFDO-API is a convenient way to manipulate valid Salesforce objects in a target environment. It accepts commands from
+the calling script, and then lets the restforce Ruby gem deal directly with the Salesforce API.
 
 ## Installation
 
@@ -22,7 +21,26 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+To create a simple Account and get the ID for that Account:
+
+  def create_account_via_api(client_name)
+    @account_id = create 'Account', Name: client_name
+  end
+
+You can also address the Restforce API client directly if you want, for example to issue a 'select' query:
+
+  def create_contact_via_api(client_name, street = '', city = '', state = '', country = '', zip = '')
+    @contact_id = create 'Contact', LastName: client_name,
+                                    MailingStreet: street,
+                                    MailingCity: city,
+                                    MailingState: state,
+                                    MailingCountry: country,
+                                    MailingPostalCode: zip
+    @contact_name = client_name
+    account_object = @api_client.query("select AccountId from Contact where Id = '#{@contact_id}'")
+    my_account_object = account_object.first
+    @account_id_for_contact = my_account_object.AccountId
+  end
 
 ## Development
 
@@ -32,5 +50,5 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/SFDO-API.
+Bug reports and pull requests are welcome on GitHub at https://github.com/SalesforceFoundation/SFDO-API.
 
