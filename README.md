@@ -22,13 +22,13 @@ Or install it yourself as:
 ## Usage
 
 To create a simple Account and get the ID for that Account:
-
+```ruby
   def create_account_via_api(client_name)
     @account_id = create 'Account', Name: client_name
   end
-
+```
 You can also address the Restforce API client directly if you want, for example to issue a 'select' query:
-
+```ruby
   def create_contact_via_api(client_name, street = '', city = '', state = '', country = '', zip = '')
     @contact_id = create 'Contact', LastName: client_name,
                                     MailingStreet: street,
@@ -36,12 +36,11 @@ You can also address the Restforce API client directly if you want, for example 
                                     MailingState: state,
                                     MailingCountry: country,
                                     MailingPostalCode: zip
-    @contact_name = client_name
     account_object = @api_client.query("select AccountId from Contact where Id = '#{@contact_id}'")
     my_account_object = account_object.first
     @account_id_for_contact = my_account_object.AccountId
   end
-
+```
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
