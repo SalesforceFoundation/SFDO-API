@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.name          = "SFDO-API"
   spec.version       = SFDO::API::VERSION
   spec.authors       = ["Chris McMahon", "Kevin Poorman"]
-  spec.email         = ["christopher.mcmahon@gmail.com"]
+  spec.email         = ["cmcmahon@salesforce.com"]
 
   spec.summary       = %q{Manipulates records via the Salesforce API using Restforce}
   spec.description   = %q{Primarily used for automated browser tests, this is a convenient way to manipulate generic Salesforce objects}

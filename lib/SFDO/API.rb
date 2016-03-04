@@ -51,5 +51,5 @@ module SfdoAPI
     end
   end
 end
-
+# INCLUDE HERE RATHER THAN IN THE PRODUCT-SPECIFIC CODE USING THIS GEM
 include SfdoAPI
