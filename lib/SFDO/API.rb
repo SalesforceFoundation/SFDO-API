@@ -19,6 +19,11 @@ module SfdoAPI
     obj_id
   end
 
+  def delete(type, obj_id)
+    puts 'deleting the object #{type} from within the gem'
+    @api_client.destroy(type, obj_id)
+  end
+
   def is_valid_obj_hash?(object_name, obj_hash, fields_acceptibly_nil)
     required_fields = get_object_describe(object_name).map(&:fieldName)
     #   [name, id, required_field_1__c, etc]
@@ -34,6 +39,22 @@ module SfdoAPI
     end
     valid
   end
+
+  def get_org_objects()
+    @org_objects ||= @api_client.describe
+
+  end
+
+  def get_deletable_objects()
+    @org_objects.select(&:deletable).map {|x| x.name}
+  end
+
+  def setup_convienence_methods()
+    get_deletable_objects.each do |obj|
+      method_alias "delete_#{obj}", :delete
+    end
+  end
+
 
   def get_object_describe(object_name)
     api_client do
