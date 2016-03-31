@@ -20,7 +20,6 @@ module SfdoAPI
   end
 
   def delete(type, obj_id)
-    puts 'deleting the object #{type} from within the gem'
     @api_client.destroy(type, obj_id)
   end
 
@@ -41,18 +40,23 @@ module SfdoAPI
   end
 
   def get_org_objects()
-    @org_objects ||= @api_client.describe
-
+    #binding.pry
+    @org_objects ||= api_client.describe
   end
 
   def get_deletable_objects()
-    @org_objects.select(&:deletable).map {|x| x.name}
+    get_org_objects.select(&:deletable).map {|x| x.name}
   end
 
-  def setup_convienence_methods()
+  def initia_conv()
+    #super
+    require 'pry'
+    p "this should show up "
+    #binding.pry
     get_deletable_objects.each do |obj|
       method_alias "delete_#{obj}", :delete
     end
+    #super
   end
 
 
