@@ -1,4 +1,5 @@
 require 'SFDO/API/version'
+require 'pry'
 
 module SfdoAPI
 
@@ -20,7 +21,9 @@ module SfdoAPI
   end
 
   def delete(type, obj_id)
-    @api_client.destroy(type, obj_id)
+    api_client do
+      @api_client.destroy(type, obj_id)
+    end
   end
 
   def is_valid_obj_hash?(object_name, obj_hash, fields_acceptibly_nil)
@@ -41,7 +44,9 @@ module SfdoAPI
 
   def get_org_objects()
     #binding.pry
-    @org_objects ||= api_client.describe
+    @org_objects ||= api_client do
+      @api_client.describe
+    end
   end
 
   def get_deletable_objects()
@@ -50,11 +55,17 @@ module SfdoAPI
 
   def initia_conv()
     #super
-    require 'pry'
+
     p "this should show up "
     #binding.pry
     get_deletable_objects.each do |obj|
-      method_alias "delete_#{obj}", :delete
+      p "defining method #{obj}"
+      binding.pry
+      define_method("delete_#{obj}".to_sym) {|id|
+        #p "defining method #{obj}"
+        delete(obj, id)
+      }
+      #alias "delete_#{obj}".to_sym :delete
     end
     #super
   end
