@@ -49,26 +49,26 @@ module SfdoAPI
     end
   end
 
-  def get_deletable_objects()
-    get_org_objects.select(&:deletable).map {|x| x.name}
-  end
+  #def get_deletable_objects()
+  #  get_org_objects.select(&:deletable).map {|x| x.name}
+  #end
 
-  def initia_conv()
+  #def initia_conv()
     #super
 
-    p "this should show up "
+   # p "this should show up "
     #binding.pry
-    get_deletable_objects.each do |obj|
-      p "defining method #{obj}"
-      binding.pry
-      define_method("delete_#{obj}".to_sym) {|id|
-        #p "defining method #{obj}"
-        delete(obj, id)
-      }
-      #alias "delete_#{obj}".to_sym :delete
-    end
+   # get_deletable_objects.each do |obj|
+   #   p "defining method #{obj}"
+   #   binding.pry
+   #   Module.define_method("delete_#{obj}".to_sym) {|id|
+   #     #p "defining method #{obj}"
+   #     delete(obj, id)
+   #   }
+   #   #alias "delete_#{obj}".to_sym :delete
+   # end
     #super
-  end
+  #end
 
 
   def get_object_describe(object_name)
@@ -86,6 +86,38 @@ module SfdoAPI
       required.select(&:required)
     end
   end
+
+    def generic_delete(obj_type, id)
+      api_client do
+        @api_client.destroy(obj_type, id)
+      end
+    end
+
+    # Given that the developer calls 'delete_contact(id)'
+    # When 'contact' is a valid object
+    # Then this method_missing method, will translate 'delete_contact' into "generic_delete('contact', id)"
+
+  def method_missing(method_called, *args, &block)
+    if method_called.to_s.match(/^delete_all_/) then
+      max = 3
+      all_or_one = true
+    else
+      max = 2
+      all_or_one = false
+    end
+    breakdown = method_called.to_s.split(/_/, max)
+    action = breakdown.first
+    all_or_one = true if breakdown[1].downcase == 'all'
+    obj_type = breakdown.last
+    case
+      when action == 'delete' && all_or_one
+        generic_delete_all(obj_type)
+      when action == 'delete' && !all_or_one
+        generic_delete(obj_type, *args)
+      else super.method_missing
+    end
+  end
+
 end
 # INCLUDE HERE RATHER THAN IN THE PRODUCT-SPECIFIC CODE USING THIS GEM
 include SfdoAPI
