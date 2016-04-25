@@ -89,6 +89,7 @@ module SfdoAPI
 
     def generic_delete(obj_type, id)
       api_client do
+        p "id is " + id.inspect
         @api_client.destroy(obj_type, id)
       end
     end
@@ -98,24 +99,33 @@ module SfdoAPI
     # Then this method_missing method, will translate 'delete_contact' into "generic_delete('contact', id)"
 
   def method_missing(method_called, *args, &block)
-    if method_called.to_s.match(/^delete_all_/) then
-      max = 3
-      all_or_one = true
-    else
-      max = 2
-      all_or_one = false
-    end
-    breakdown = method_called.to_s.split(/_/, max)
+
+    #if method_called.to_s.match(/^delete_all_/) then
+    #  max = 3
+    #  all_or_one = true
+    #else
+    #  max = 2
+    #  all_or_one = false
+    #end
+
+    breakdown = method_called.to_s.split('_')
     action = breakdown.first
     all_or_one = true if breakdown[1].downcase == 'all'
     obj_type = breakdown.last
+
+
     case
-      when action == 'delete' && all_or_one
-        generic_delete_all(obj_type)
+    #  when action == 'delete' && all_or_one
+    #    generic_delete_all(obj_type)
       when action == 'delete' && !all_or_one
+        p "args is " + args.inspect
         generic_delete(obj_type, *args)
       else super.method_missing
     end
+
+    #generic_delete(obj_type, *args)
+    #super
+
   end
 
 end
