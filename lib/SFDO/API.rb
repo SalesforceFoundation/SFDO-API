@@ -110,14 +110,14 @@ module SfdoAPI
 
     breakdown = method_called.to_s.split('_')
     action = breakdown.first
-    all_or_one = true if breakdown[1].downcase == 'all'
+    #all_or_one = true if breakdown[1].downcase == 'all'
     obj_type = breakdown.last
 
 
     case
     #  when action == 'delete' && all_or_one
     #    generic_delete_all(obj_type)
-      when action == 'delete' && !all_or_one
+      when action == 'delete' #&& !all_or_one
         p "args is " + args.inspect
         generic_delete(obj_type, *args)
       else super.method_missing
