@@ -99,43 +99,20 @@ module SfdoAPI
     # Then this method_missing method, will translate 'delete_contact' into "generic_delete('contact', id)"
 
   def method_missing(method_called, *args, &block)
+    case method_called.to_s
+      when /^delete_all_/
 
-    #if method_called.to_s.match(/^delete_all_/) then
-    #  max = 3
-    #  all_or_one = true
-    #else
-    #  max = 2
-    #  all_or_one = false
-    #end
-
-    breakdown = method_called.to_s.split('_')
-    action = breakdown.first
-    #all_or_one = true if breakdown[1].downcase == 'all'
-    obj_type = breakdown.last.capitalize
-
-
-    #WHAT IS THIS I CAN'T EVEN
-    #p 'obj_type 1 is ' + obj_type
-    #p "args 1 is " + args.inspect
-
-
-    case
-    #  when action == 'delete' && all_or_one
-    #    generic_delete_all(obj_type)
-      #WORKING CODE BELOW
-      when action == 'delete' #&& !all_or_one
-        p 'obj_type is ' + obj_type
-        p "args is " + args.inspect
-        generic_delete(obj_type, *args)
-      else super.method_missing
+      when /^delete_/
+        breakdown = method_called.to_s.split('_')
+        action = breakdown.first
+        obj_type = breakdown.last.capitalize
+        generic_delete obj_type, *args
+      #stuff
+      when /^create_/
+        #other stuff
+      else
+        super.method_missing
     end
-
-    #CODE BELOW SHOULD WORK BUT DOES NOT
-    #p 'obj_type 2 is ' + obj_type
-    #p "args 2 is " + args.inspect
-    #generic_delete(obj_type, *args)
-    #super.method_missing
-
   end
 
 end
