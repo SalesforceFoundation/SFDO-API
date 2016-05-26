@@ -90,7 +90,8 @@ module SfdoAPI
     def generic_delete(obj_type, id)
       api_client do
         p "id is " + id.inspect
-        @api_client.destroy(obj_type, id)
+        #@api_client.destroy(obj_type, id)
+        id.each(&:destroy)
       end
     end
 
@@ -101,9 +102,11 @@ module SfdoAPI
   def method_missing(method_called, *args, &block)
     case method_called.to_s
       when /^delete_all_/
+        p "in delete_all"
         breakdown = method_called.to_s.split('_')
         action = breakdown.first
         obj_type = breakdown.last.capitalize
+        p *args.inspect
         generic_delete obj_type, *args
 
       when /^delete_one/
