@@ -101,8 +101,12 @@ module SfdoAPI
   def method_missing(method_called, *args, &block)
     case method_called.to_s
       when /^delete_all_/
+        breakdown = method_called.to_s.split('_')
+        action = breakdown.first
+        obj_type = breakdown.last.capitalize
+        generic_delete obj_type, *args
 
-      when /^delete_/
+      when /^delete_one/
         breakdown = method_called.to_s.split('_')
         action = breakdown.first
         obj_type = breakdown.last.capitalize
