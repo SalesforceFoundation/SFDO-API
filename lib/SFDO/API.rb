@@ -20,12 +20,6 @@ module SfdoAPI
     obj_id
   end
 
-  def delete(type, obj_id)
-    api_client do
-      @api_client.destroy(type, obj_id)
-    end
-  end
-
   def is_valid_obj_hash?(object_name, obj_hash, fields_acceptibly_nil)
     required_fields = get_object_describe(object_name).map(&:fieldName)
     #   [name, id, required_field_1__c, etc]
@@ -87,13 +81,19 @@ module SfdoAPI
     end
   end
 
-    def generic_delete(obj_type, id)
-      api_client do
-        p "id is " + id.inspect
-        #@api_client.destroy(obj_type, id)
-        id.each(&:destroy)
-      end
+  def delete(type, obj_id)
+    api_client do
+      @api_client.destroy(type, obj_id)
     end
+  end
+
+  def generic_delete_all(obj_type, id)
+    api_client do
+      #p "id is " + id.inspect
+      #@api_client.destroy(obj_type, id)
+      id.each(&:destroy)
+    end
+  end
 
     # Given that the developer calls 'delete_contact(id)'
     # When 'contact' is a valid object
@@ -102,21 +102,20 @@ module SfdoAPI
   def method_missing(method_called, *args, &block)
     case method_called.to_s
       when /^delete_all_/
-        p "in delete_all"
+        #p "in delete_all"
         breakdown = method_called.to_s.split('_')
         action = breakdown.first
         obj_type = breakdown.last.capitalize
-        p *args.inspect
-        generic_delete obj_type, *args
+        #p *args.inspect
+        generic_delete_all obj_type, *args
 
       when /^delete_one/
         breakdown = method_called.to_s.split('_')
         action = breakdown.first
         obj_type = breakdown.last.capitalize
-        generic_delete obj_type, *args
-      #stuff
+        delete obj_type, *args
       when /^create_/
-        #other stuff
+        #stuff
       else
         super.method_missing
     end
