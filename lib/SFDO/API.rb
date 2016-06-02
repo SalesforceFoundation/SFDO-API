@@ -43,28 +43,6 @@ module SfdoAPI
     end
   end
 
-  #def get_deletable_objects()
-  #  get_org_objects.select(&:deletable).map {|x| x.name}
-  #end
-
-  #def initia_conv()
-    #super
-
-   # p "this should show up "
-    #binding.pry
-   # get_deletable_objects.each do |obj|
-   #   p "defining method #{obj}"
-   #   binding.pry
-   #   Module.define_method("delete_#{obj}".to_sym) {|id|
-   #     #p "defining method #{obj}"
-   #     delete(obj, id)
-   #   }
-   #   #alias "delete_#{obj}".to_sym :delete
-   # end
-    #super
-  #end
-
-
   def get_object_describe(object_name)
     api_client do
       @description = @api_client.get("/services/data/v35.0/sobjects/#{object_name}/describe")
@@ -87,7 +65,7 @@ module SfdoAPI
     end
   end
 
-  def generic_delete_all(obj_type, id)
+  def delete_all(obj_type, id)
     api_client do
       #p "id is " + id.inspect
       #@api_client.destroy(obj_type, id)
@@ -100,22 +78,15 @@ module SfdoAPI
     # Then this method_missing method, will translate 'delete_contact' into "generic_delete('contact', id)"
 
   def method_missing(method_called, *args, &block)
+    breakdown = method_called.to_s.split('_')
+    obj_type = breakdown.last.capitalize
     case method_called.to_s
       when /^delete_all_/
-        #p "in delete_all"
-        breakdown = method_called.to_s.split('_')
-        action = breakdown.first
-        obj_type = breakdown.last.capitalize
-        #p *args.inspect
-        generic_delete_all obj_type, *args
-
+        delete_all obj_type, *args
       when /^delete_one/
-        breakdown = method_called.to_s.split('_')
-        action = breakdown.first
-        obj_type = breakdown.last.capitalize
         delete obj_type, *args
       when /^create_/
-        #stuff
+        #TODO
       else
         super.method_missing
     end
