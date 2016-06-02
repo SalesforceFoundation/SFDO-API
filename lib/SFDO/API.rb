@@ -1,4 +1,5 @@
 require 'SFDO/API/version'
+require 'pry'
 
 module SfdoAPI
 
@@ -35,6 +36,13 @@ module SfdoAPI
     valid
   end
 
+  def get_org_objects()
+    #binding.pry
+    @org_objects ||= api_client do
+      @api_client.describe
+    end
+  end
+
   def get_object_describe(object_name)
     api_client do
       @description = @api_client.get("/services/data/v35.0/sobjects/#{object_name}/describe")
@@ -50,6 +58,40 @@ module SfdoAPI
       required.select(&:required)
     end
   end
+
+  def delete(type, obj_id)
+    api_client do
+      @api_client.destroy(type, obj_id)
+    end
+  end
+
+  def delete_all(obj_type, id)
+    api_client do
+      #p "id is " + id.inspect
+      #@api_client.destroy(obj_type, id)
+      id.each(&:destroy)
+    end
+  end
+
+    # Given that the developer calls 'delete_contact(id)'
+    # When 'contact' is a valid object
+    # Then this method_missing method, will translate 'delete_contact' into "generic_delete('contact', id)"
+
+  def method_missing(method_called, *args, &block)
+    breakdown = method_called.to_s.split('_')
+    obj_type = breakdown.last.capitalize
+    case method_called.to_s
+      when /^delete_all_/
+        delete_all obj_type, *args
+      when /^delete_one/
+        delete obj_type, *args
+      when /^create_/
+        #TODO
+      else
+        super.method_missing
+    end
+  end
+
 end
 # INCLUDE HERE RATHER THAN IN THE PRODUCT-SPECIFIC CODE USING THIS GEM
 include SfdoAPI

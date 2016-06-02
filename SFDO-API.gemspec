@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["cmcmahon@salesforce.com"]
 
   spec.summary       = %q{Manipulates records via the Salesforce API using Restforce}
-  spec.description   = %q{Primarily used for automated browser tests, this is a convenient way to manipulate generic Salesforce objects}
+  spec.description   = %q{Primarily used for automated browser tests, this is a convenient way to manipulate generic Salesforce objects across multiple repositories}
   spec.homepage      = "https://github.com/SalesforceFoundation/SFDO-API"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
@@ -21,5 +21,6 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "bundler", "~> 1.10"
   spec.add_development_dependency "rake", "~> 10.0"
+  spec.add_development_dependency "pry"
   spec.add_dependency "restforce", "~> 2.1.1"
 end
