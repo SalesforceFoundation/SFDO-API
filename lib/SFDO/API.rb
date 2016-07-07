@@ -41,10 +41,16 @@ module SfdoAPI
     @org_objects ||= api_client do
       @api_client.describe
     end
+    org_names = @org_objects.select{|x| x.name =~ /^np.*__.*__c/i}.map{|y| y.name}
+    p "it's at least one managed package" if org_names.length > 0
+    p org_names.length
+    p org_names.inspect
+    #binding.pry
   end
 
   def get_object_describe(object_name)
     api_client do
+      get_org_objects
       @description = @api_client.get("/services/data/v35.0/sobjects/#{object_name}/describe")
 
       describeobject = Hashie::Mash.new(@description.body)
