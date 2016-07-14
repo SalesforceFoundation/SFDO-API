@@ -36,21 +36,44 @@ module SfdoAPI
     valid
   end
 
-  def get_org_objects()
+  def org_describe()
     #binding.pry
-    @org_objects ||= api_client do
+    @org_describe ||= api_client do
       @api_client.describe
     end
-    org_names = @org_objects.select{|x| x.name =~ /^np.*__.*__c/i}.map{|y| y.name}
-    p "it's at least one managed package" if org_names.length > 0
-    p org_names.length
-    p org_names.inspect
+  end
+
+
+  def npsp_managed_obj_names()
+    @npsp_managed_obj_names ||= @org_describe.select{|x| x.name =~ /^np.*__.*__c/i}.map{|y| y.name}
+    #p "this is npsp_managed_obj_names" + @npsp_managed_obj_names.inspect
+  end
+
+  def managed_package_prefix(obj_name)
+    # GOAL: Delete NPSP objects whether managed or unmanaged
+    # Managed will start with npsp__
+    # Unmanaged will have no prefix but end with __c
+    # Other prefixes will always be managed
+    # URLs also need tweaking
+    # I don't have an unmanaged org handy right now
+    npsp_managed_obj_names
+
+    potentials = @npsp_managed_obj_names.select{|x| x =~ /obj_name/i}
+    binding.pry
+    if potentials.size  > 0
+      p potentials.first.split("__.")
+      return potentials.first.split("__.").first + "__."
+    end
+    p "it's at least one managed package" if potentials.length > 0
+    p potentials.length
+    p potentials.inspect
     #binding.pry
   end
 
   def get_object_describe(object_name)
     api_client do
-      get_org_objects
+      org_describe
+      managed_package_prefix("npsp__General_Accounting_Unit__c")
       @description = @api_client.get("/services/data/v35.0/sobjects/#{object_name}/describe")
 
       describeobject = Hashie::Mash.new(@description.body)
