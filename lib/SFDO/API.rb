@@ -45,8 +45,11 @@ module SfdoAPI
 
 
   def npsp_managed_obj_names()
+    #BOOM FIX THIS REGEX
     @npsp_managed_obj_names ||= @org_describe.select{|x| x.name =~ /^np.*__.*__c/i}.map{|y| y.name}
-    #p "this is npsp_managed_obj_names" + @npsp_managed_obj_names.inspect
+    p ""
+    p "this is npsp_managed_obj_names " + @npsp_managed_obj_names.inspect
+    p ""
   end
 
   def managed_package_prefix(obj_name)
@@ -56,7 +59,11 @@ module SfdoAPI
     # Other prefixes will always be managed
     # URLs also need tweaking
     # I don't have an unmanaged org handy right now
+    p ""
+    p "this is obj_name in managed_package_prefix " + obj_name
+    p ""
     npsp_managed_obj_names
+
 
     potentials = @npsp_managed_obj_names.select{|x| x =~ /obj_name/i}
     binding.pry
