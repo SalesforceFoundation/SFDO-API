@@ -74,7 +74,7 @@ To delete all instances of an object
   end
 ```
 
-To create or delete instances of custom object that may have managed or unmanaged namespace use true_object_name
+To create or delete instances of custom objects that may have managed or unmanaged namespace use true_object_name
 
 ```ruby
   def create_gau_via_api(gau_name)
