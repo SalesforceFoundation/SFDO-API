@@ -60,7 +60,6 @@ To delete a single instance of an object for which you have the Id value
       end
     end
   end
-   end
 ```
 
 To delete all instances of an object 
