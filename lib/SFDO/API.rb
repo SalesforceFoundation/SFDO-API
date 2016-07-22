@@ -45,42 +45,29 @@ module SfdoAPI
 
 
   def npsp_managed_obj_names()
-    #BOOM FIX THIS REGEX
     @npsp_managed_obj_names ||= @org_describe.select{|x| x.name =~ /^np.*__.*__c/i}.map{|y| y.name}
-    p ""
-    p "this is npsp_managed_obj_names " + @npsp_managed_obj_names.inspect
-    p ""
   end
 
-  def managed_package_prefix(obj_name)
+  def true_object_name(obj_name)
     # GOAL: Delete NPSP objects whether managed or unmanaged
     # Managed will start with npsp__
     # Unmanaged will have no prefix but end with __c
     # Other prefixes will always be managed
     # URLs also need tweaking
     # I don't have an unmanaged org handy right now
-    p ""
-    p "this is obj_name in managed_package_prefix " + obj_name
-    p ""
-    npsp_managed_obj_names
 
-
-    potentials = @npsp_managed_obj_names.select{|x| x =~ /obj_name/i}
-    binding.pry
-    if potentials.size  > 0
-      p potentials.first.split("__.")
-      return potentials.first.split("__.").first + "__."
-    end
-    p "it's at least one managed package" if potentials.length > 0
-    p potentials.length
-    p potentials.inspect
+    potentials = npsp_managed_obj_names().select{|x| x =~ /#{obj_name}/i}
     #binding.pry
+    if potentials.size  > 0
+      return potentials.first #.split("__.").first + "__."
+    elsif org_describe().select{|x| x.name =~ /^#{obj_name}/i}.map{|y| y.name}.size > 0
+      return obj_name
+      end
   end
 
   def get_object_describe(object_name)
     api_client do
       org_describe
-      managed_package_prefix("npsp__General_Accounting_Unit__c")
       @description = @api_client.get("/services/data/v35.0/sobjects/#{object_name}/describe")
 
       describeobject = Hashie::Mash.new(@description.body)
@@ -97,12 +84,13 @@ module SfdoAPI
 
   def delete(type, obj_id)
     api_client do
-      @api_client.destroy(type, obj_id)
+      @api_client.destroy(true_object_name(type), obj_id)
     end
   end
 
   def delete_all(obj_type, id)
     api_client do
+      obj_type = true_object_name(obj_type)
       #p "id is " + id.inspect
       #@api_client.destroy(obj_type, id)
       id.each(&:destroy)
