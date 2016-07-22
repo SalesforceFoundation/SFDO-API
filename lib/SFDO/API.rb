@@ -107,7 +107,7 @@ module SfdoAPI
     case method_called.to_s
       when /^delete_all_/
         delete_all obj_type, *args
-      when /^delete_one/
+      when /^delete_d/
         delete obj_type, *args
       when /^create_/
         #TODO
