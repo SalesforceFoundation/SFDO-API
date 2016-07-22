@@ -22,12 +22,15 @@ Or install it yourself as:
 ## Usage
 
 To create a simple Account and get the ID for that Account:
+
 ```ruby
   def create_account_via_api(client_name)
     @account_id = create 'Account', Name: client_name
   end
 ```
+
 You can also address the Restforce API client directly if you want, for example to issue a 'select' query:
+
 ```ruby
   def create_contact_via_api(client_name, street = '', city = '', state = '', country = '', zip = '')
     @contact_id = create 'Contact', LastName: client_name,
@@ -41,6 +44,59 @@ You can also address the Restforce API client directly if you want, for example 
     @account_id_for_contact = my_account_object.AccountId
   end
 ```
+
+To delete a single instance of an object for which you have the Id value
+```ruby
+  def delete_account_via_api
+   delete_one_account(@account_id)
+  end
+```
+
+```ruby
+  def delete_contacts_via_api
+    api_client do
+      @array_of_contacts.each do |contact_id|
+        delete_one_contact(contact_id)
+      end
+    end
+  end
+   end
+```
+
+To delete all instances of an object 
+
+```ruby
+  def delete_household_accounts
+    api_client do
+      hh_accs = @api_client.query("select Id from Account where Type = 'Household'")
+      delete_all_household_account(hh_accs)
+    end
+  end
+```
+
+To create or delete instances of custom object that may have managed or unmanaged namespace use true_object_name
+
+```ruby
+  def create_gau_via_api(gau_name)
+    @gau_id = create "#{true_object_name('General_Accounting_Unit__c')}", Name: gau_name
+  end
+```
+
+
+```ruby
+  def delete_gaus_via_api
+    api_client do
+      gaus = @api_client.query("select Id from #{true_object_name('General_Accounting_Unit__c')}")
+puts gaus.inspect
+      delete_all_General_Accounting_Unit__c(gaus)
+    end
+  end
+```
+
+
+
+
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
