@@ -21,6 +21,8 @@ Or install it yourself as:
 
 ## Usage
 
+### All examples below are calling code, not SFDO-API code
+
 To create a simple Account and get the ID for that Account:
 
 ```ruby
