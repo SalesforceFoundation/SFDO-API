@@ -73,7 +73,7 @@ To delete all instances of an object
   end
 ```
 
-To create or delete instances of custom objects that may have managed or unmanaged namespace use true_object_name
+To create instances of custom objects that may have managed or unmanaged namespace use true_object_name
 
 ```ruby
   def create_gau_via_api(gau_name)
@@ -81,6 +81,7 @@ To create or delete instances of custom objects that may have managed or unmanag
   end
 ```
 
+Note that when using delete_one_foo or delete_all_foo do not use any namespace value, SFDO-API does that for you
 
 ```ruby
   def delete_gaus_via_api
