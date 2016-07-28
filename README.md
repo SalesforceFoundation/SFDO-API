@@ -1,7 +1,10 @@
 # SFDO::API
 
-SFDO-API is a convenient way to manipulate valid Salesforce objects in a target environment. It accepts commands from
-the calling script, and then lets the restforce Ruby gem deal directly with the Salesforce API.
+SFDO-API is a convenient way to use the Salesforce API to manipulate objects in a target org. SFDO-API was intended orginally to
+facilitate the sharing of common API calls across multiple source repositories, but the project is evolving to provide powerful
+tools for handiling SF objects, like support for managed and unmanaged namespaces, multiple namespaces in an org, etc. 
+
+SFDO-API accepts commands from the calling script, and then lets the restforce Ruby gem deal directly with the Salesforce API.
 
 ## Installation
 
