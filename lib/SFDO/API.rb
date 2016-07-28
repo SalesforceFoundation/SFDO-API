@@ -22,7 +22,6 @@ module SfdoAPI
 
   def is_valid_obj_hash?(object_name, obj_hash, fields_acceptibly_nil)
     required_fields = get_object_describe(object_name).map(&:fieldName)
-    #   [name, id, required_field_1__c, etc]
     valid = true
     required_fields.each do |f|
 
@@ -36,15 +35,32 @@ module SfdoAPI
     valid
   end
 
-  def get_org_objects()
-    #binding.pry
-    @org_objects ||= api_client do
+  def org_describe()
+    @org_describe ||= api_client do
       @api_client.describe
     end
   end
 
+
+  def npsp_managed_obj_names()
+    # GOAL: Delete NPSP objects whether managed or unmanaged
+    # Managed will start with np*__
+    # Unmanaged will have no prefix but end with __c
+    @npsp_managed_obj_names ||= @org_describe.select{|x| x.name =~ /^np.*__.*__c/i}.map{|y| y.name}
+  end
+
+  def true_object_name(obj_name)
+    potentials = npsp_managed_obj_names().select{|x| x =~ /#{obj_name}/i}
+    if potentials.size  > 0
+      return potentials.first #.split("__.").first + "__."
+    elsif org_describe().select{|x| x.name =~ /^#{obj_name}/i}.map{|y| y.name}.size > 0
+      return obj_name
+      end
+  end
+
   def get_object_describe(object_name)
     api_client do
+      org_describe
       @description = @api_client.get("/services/data/v35.0/sobjects/#{object_name}/describe")
 
       describeobject = Hashie::Mash.new(@description.body)
@@ -61,21 +77,17 @@ module SfdoAPI
 
   def delete(type, obj_id)
     api_client do
-      @api_client.destroy(type, obj_id)
+      @api_client.destroy(true_object_name(type), obj_id)
     end
   end
 
   def delete_all(obj_type, id)
     api_client do
-      #p "id is " + id.inspect
-      #@api_client.destroy(obj_type, id)
+      obj_type = true_object_name(obj_type)
       id.each(&:destroy)
     end
   end
 
-    # Given that the developer calls 'delete_contact(id)'
-    # When 'contact' is a valid object
-    # Then this method_missing method, will translate 'delete_contact' into "generic_delete('contact', id)"
 
   def method_missing(method_called, *args, &block)
     breakdown = method_called.to_s.split('_')
