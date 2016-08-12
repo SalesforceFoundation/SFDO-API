@@ -41,11 +41,22 @@ module SfdoAPI
     end
   end
 
+  def generate_obj_prefix_to_name
+    @prefix_to_name = {}
+
+    @prefix_to_name ||= @org_describe.each do |z|
+      @prefix_to_name.store(z.keyPrefix, z.name)
+    end
+    return @prefix_to_name
+
+    binding.pry
+  end
 
   def npsp_managed_obj_names()
     # GOAL: Delete NPSP objects whether managed or unmanaged
     # Managed will start with np*__
     # Unmanaged will have no prefix but end with __c
+    #binding.pry
     @npsp_managed_obj_names ||= @org_describe.select{|x| x.name =~ /^np.*__.*__c/i}.map{|y| y.name}
   end
 
@@ -76,10 +87,18 @@ module SfdoAPI
   end
 
   def delete(type, obj_id)
+    # true_object_name returns the wrong value if a custom object name contains the string of a SF object e.g "Account"
+    p "obj_type as sent " + type
+    p "obj type as returned from true_object_name() " + true_object_name(type)
     api_client do
       @api_client.destroy(true_object_name(type), obj_id)
     end
   end
+
+  #
+  #REWRITE TRUE_OBJECT_NAME TO RETURN type depending on obj_id from generate_obj_prefix_to_name
+  # using first 3 characters of obj_id
+  #
 
   def delete_all(obj_type, id)
     api_client do
@@ -92,6 +111,10 @@ module SfdoAPI
   def method_missing(method_called, *args, &block)
     breakdown = method_called.to_s.split('_')
     obj_type = breakdown.last.capitalize
+
+    #NEED TO ACCOUNT FOR THE CASE WHEN obj_type DOES NOT END IN /*__c/
+    #THEN CALL DELETE WITHOUT CALLING true_object_name()
+
     case method_called.to_s
       when /^delete_all_/
         delete_all obj_type, *args
