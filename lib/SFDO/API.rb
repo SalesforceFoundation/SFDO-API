@@ -41,32 +41,39 @@ module SfdoAPI
     end
   end
 
-  def generate_obj_prefix_to_name
-    @prefix_to_name = {}
-
-    @prefix_to_name ||= @org_describe.each do |z|
-      @prefix_to_name.store(z.keyPrefix, z.name)
+  def generate_true_name_hashes
+    if @prefix_to_name.nil? || @org_names_without_namespace.nil? || !@org_names_without_namespace.respond_to?(:contains)  || !@prefix_to_name.respond_to?(:contains)
+      @prefix_to_name = {}
+      @org_describe.each do |z|
+        @prefix_to_name.store(z.keyPrefix, z.name)
+        @obj_names_without_namespace.store(z.name.sub(/^.*__/, ' '), z.name)
+      end
     end
-    return @prefix_to_name
 
-    binding.pry
+    #TODO: TURN THIS AND OBJ_NAMES_WITHOUT_NAMESPACES INTO A SINGLE DATASET
+    #TODO  CONTAINING BOTH PREFIX-TO-NAME AND NAME-TO-PREFIX
+
+    return @prefix_to_name
   end
 
   def npsp_managed_obj_names()
-    # GOAL: Delete NPSP objects whether managed or unmanaged
-    # Managed will start with np*__
-    # Unmanaged will have no prefix but end with __c
-    #binding.pry
     @npsp_managed_obj_names ||= @org_describe.select{|x| x.name =~ /^np.*__.*__c/i}.map{|y| y.name}
   end
 
-  def true_object_name(obj_name)
-    potentials = npsp_managed_obj_names().select{|x| x =~ /#{obj_name}/i}
-    if potentials.size  > 0
-      return potentials.first #.split("__.").first + "__."
-    elsif org_describe().select{|x| x.name =~ /^#{obj_name}/i}.map{|y| y.name}.size > 0
-      return obj_name
+  def true_object_name(obj_id)
+    generate_obj_prefix_to_name
+    tmp_var = @prefix_to_name[obj_id[0..2]]
+    if tmp_var.nil?
+
+    end
+  end
+
+  def obj_names_without_namespace
+    if @obj_names_without_namespace.nil? || !@obj_names_without_namespace.respond_to?(:contains)
+      @obj_names_without_namespace = {}
+      org_describe.each do |z|
       end
+    end
   end
 
   def get_object_describe(object_name)
@@ -87,18 +94,15 @@ module SfdoAPI
   end
 
   def delete(type, obj_id)
-    # true_object_name returns the wrong value if a custom object name contains the string of a SF object e.g "Account"
-    p "obj_type as sent " + type
-    p "obj type as returned from true_object_name() " + true_object_name(type)
-    api_client do
-      @api_client.destroy(true_object_name(type), obj_id)
-    end
+    delete_by_id(obj_id)
   end
 
-  #
-  #REWRITE TRUE_OBJECT_NAME TO RETURN type depending on obj_id from generate_obj_prefix_to_name
-  # using first 3 characters of obj_id
-  #
+  def delete_by_id(obj_id)
+    api_client do
+      @api_client.destroy(true_object_name(obj_id), obj_id)
+    end
+
+  end
 
   def delete_all(obj_type, id)
     api_client do
@@ -107,13 +111,9 @@ module SfdoAPI
     end
   end
 
-
   def method_missing(method_called, *args, &block)
     breakdown = method_called.to_s.split('_')
     obj_type = breakdown.last.capitalize
-
-    #NEED TO ACCOUNT FOR THE CASE WHEN obj_type DOES NOT END IN /*__c/
-    #THEN CALL DELETE WITHOUT CALLING true_object_name()
 
     case method_called.to_s
       when /^delete_all_/
