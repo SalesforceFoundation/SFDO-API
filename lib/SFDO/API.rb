@@ -41,18 +41,13 @@ module SfdoAPI
     end
   end
 
-  def generate_true_name_hashes
-    if @prefix_to_name.nil? || @org_names_without_namespace.nil? || !@org_names_without_namespace.respond_to?(:contains)  || !@prefix_to_name.respond_to?(:contains)
+  def prefix_to_name
+    if @prefix_to_name.nil? || !@prefix_to_name.respond_to?(:contains)
       @prefix_to_name = {}
-      @org_describe.each do |z|
+      org_describe.each do |z|
         @prefix_to_name.store(z.keyPrefix, z.name)
-        @obj_names_without_namespace.store(z.name.sub(/^.*__/, ' '), z.name)
       end
     end
-
-    #TODO: TURN THIS AND OBJ_NAMES_WITHOUT_NAMESPACES INTO A SINGLE DATASET
-    #TODO  CONTAINING BOTH PREFIX-TO-NAME AND NAME-TO-PREFIX
-
     return @prefix_to_name
   end
 
@@ -60,20 +55,24 @@ module SfdoAPI
     @npsp_managed_obj_names ||= @org_describe.select{|x| x.name =~ /^np.*__.*__c/i}.map{|y| y.name}
   end
 
-  def true_object_name(obj_id)
-    generate_obj_prefix_to_name
-    tmp_var = @prefix_to_name[obj_id[0..2]]
-    if tmp_var.nil?
-
+  def true_object_name(handle) #either an ID or a string name
+    from_id = prefix_to_name[handle[0..2]]
+    from_name = obj_names_without_namespace[handle]
+    if !from_name.nil? || !from_id.nil?
+      return from_name if from_id.nil?
+      return from_id if from_name.nil?
     end
+    return 'invalid'
   end
 
   def obj_names_without_namespace
     if @obj_names_without_namespace.nil? || !@obj_names_without_namespace.respond_to?(:contains)
       @obj_names_without_namespace = {}
       org_describe.each do |z|
+        @obj_names_without_namespace.store(z.name.split("__",2).last, z.name)
       end
     end
+    @obj_names_without_namespace
   end
 
   def get_object_describe(object_name)
@@ -85,9 +84,9 @@ module SfdoAPI
 
       required = describeobject.fields.map do |x|
         Hashie::Mash.new(
-          fieldName: x.name,
-          required: (!x.nillable && !x.defaultedOnCreate),
-          default: x.defaultValue)
+            fieldName: x.name,
+            required: (!x.nillable && !x.defaultedOnCreate),
+            default: x.defaultValue)
       end
       required.select(&:required)
     end
@@ -104,9 +103,8 @@ module SfdoAPI
 
   end
 
-  def delete_all(obj_type, id)
+  def delete_all(id)
     api_client do
-      obj_type = true_object_name(obj_type)
       id.each(&:destroy)
     end
   end
@@ -117,7 +115,7 @@ module SfdoAPI
 
     case method_called.to_s
       when /^delete_all_/
-        delete_all obj_type, *args
+        delete_all *args
       when /^delete_one/
         delete obj_type, *args
       when /^create_/
@@ -130,3 +128,4 @@ module SfdoAPI
 end
 # INCLUDE HERE RATHER THAN IN THE PRODUCT-SPECIFIC CODE USING THIS GEM
 include SfdoAPI
+
