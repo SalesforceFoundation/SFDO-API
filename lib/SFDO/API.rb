@@ -36,7 +36,7 @@ module SfdoAPI
   end
 
   def org_describe()
-    @org_describe ||= api_client do
+    api_client do
       @api_client.describe
     end
   end
@@ -52,7 +52,7 @@ module SfdoAPI
   end
 
   def npsp_managed_obj_names()
-    @npsp_managed_obj_names ||= @org_describe.select{|x| x.name =~ /^np.*__.*__c/i}.map{|y| y.name}
+    @npsp_managed_obj_names ||= org_describe.select{|x| x.name =~ /^np.*__.*__c/i}.map{|y| y.name}
   end
 
   def true_object_name(handle) #either an ID or a string name
