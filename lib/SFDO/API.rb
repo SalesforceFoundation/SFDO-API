@@ -36,9 +36,12 @@ module SfdoAPI
   end
 
   def org_describe()
-    api_client do
-      @api_client.describe
+    if @org_description.nil? || !@org_description.respond_to?(:contains)
+      @org_description = api_client do
+        @api_client.describe
+      end
     end
+    return @org_description
   end
 
   def prefix_to_name
@@ -49,10 +52,6 @@ module SfdoAPI
       end
     end
     return @prefix_to_name
-  end
-
-  def npsp_managed_obj_names()
-    @npsp_managed_obj_names ||= org_describe.select{|x| x.name =~ /^np.*__.*__c/i}.map{|y| y.name}
   end
 
   def true_object_name(handle) #either an ID or a string name
@@ -77,7 +76,6 @@ module SfdoAPI
 
   def get_object_describe(object_name)
     api_client do
-      org_describe
       @description = @api_client.get("/services/data/v35.0/sobjects/#{object_name}/describe")
 
       describeobject = Hashie::Mash.new(@description.body)
@@ -100,7 +98,6 @@ module SfdoAPI
     api_client do
       @api_client.destroy(true_object_name(obj_id), obj_id)
     end
-
   end
 
   def delete_all(id)

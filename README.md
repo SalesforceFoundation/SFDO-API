@@ -115,8 +115,11 @@ Note that ISVs may override required fields on standard Salesforce objects, and 
                              'Opportunity': ['ForecastCategory'] }
 ```
 
+### TODO
 
+Fields on namespaced object may be namespaced themselves. SFDO-API does not handle this case yet. 
 
+Custom fields on standard Salesforce objects may have namespaces. SFDO-API does not handle such fields yet. 
 
 
 ## Development
@@ -128,4 +131,3 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/SalesforceFoundation/SFDO-API.
-
