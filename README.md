@@ -78,9 +78,9 @@ To delete all instances of an object
   end
 ```
 
-To create instances of custom objects that may have managed or unmanaged namespace use true_object_name. 
+### Custom Objects
 
-NOTE: in the future we will remove the need to use true_object_name() from calling code, but for now this is how it works.
+To create instances of custom objects that may have managed or unmanaged namespace use true_object_name. 
 
 ```ruby
   def create_gau_via_api(gau_name)
@@ -88,7 +88,10 @@ NOTE: in the future we will remove the need to use true_object_name() from calli
   end
 ```
 
-Note that when using delete_one_foo or delete_all_foo do not use any namespace value, SFDO-API does that for you
+NOTE: in the future we will remove the need to use true_object_name() from calling code when creating and selecting custom objects, 
+but for now this is how it works.
+
+When using delete_one_foo or delete_all_foo do not use any namespace value, SFDO-API does that for you
 
 ```ruby
   def delete_gaus_via_api
@@ -100,7 +103,9 @@ puts gaus.inspect
   end
 ```
 
-Note that ISVs may override required fields and these may be needed for SFDO-API to work properly
+### Using objects where local override changes required fields
+
+Note that ISVs may override required fields on standard Salesforce objects, and these may be needed for SFDO-API to work properly
 
 ```ruby
   # NPSP will automatically create certain fields on certain objects based on required input values for those records.
