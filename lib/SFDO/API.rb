@@ -118,6 +118,10 @@ module SfdoAPI
         delete obj_type, *args
       when /^create_/
         create obj_type, *args
+      when /^update/
+        #TODO
+      when /^select/
+        #TODO
       else
         super.method_missing
     end
