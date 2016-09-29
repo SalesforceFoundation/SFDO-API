@@ -12,6 +12,7 @@ module SfdoAPI
   end
 
   def create(type, obj_hash)
+    type = true_object_name(type)
     if is_valid_obj_hash?(type, obj_hash, @fields_acceptibly_nil)
       obj_id = api_client do
         @api_client.create! type, obj_hash
@@ -116,6 +117,10 @@ module SfdoAPI
       when /^delete_one/
         delete obj_type, *args
       when /^create_/
+        create obj_type, *args
+      when /^update/
+        #TODO
+      when /^select/
         #TODO
       else
         super.method_missing
