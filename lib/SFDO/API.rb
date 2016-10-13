@@ -1,5 +1,6 @@
 require 'SFDO/API/version'
 require 'pry'
+require 'sql-parser'
 
 module SfdoAPI
 
@@ -19,6 +20,36 @@ module SfdoAPI
       end
     end
     obj_id
+  end
+
+  def select(query)
+    #^SELECT.*
+    #given: "SELECT * FROM foo WHERE bar"
+    #then parse that into ["SELECT *", "FROM foo ", "WHERE Bar"];
+    #then gsub each worrd in FROM section against true obj name
+    #parts.join " "
+    #ap_client.query(parts.join " ")
+
+    parser = SQLParser::Parser.new
+    ast = parser.scan_str(query)
+
+    #binding.pry
+
+    from = ast.query_expression.table_expression.from_clause.to_sql
+
+    from_and_object = from.split(' ')
+    real_object_name = true_object_name(from_and_object[1])
+
+    from.gsub(from.split(' ').last, real_object_name)
+
+    query = ast.select_clause.to_sql + from + ast.where_clause.to_sql
+
+    p query
+
+   results = api_client do
+     @api_client.select query
+   end
+    results
   end
 
   def is_valid_obj_hash?(object_name, obj_hash, fields_acceptibly_nil)
@@ -121,7 +152,7 @@ module SfdoAPI
       when /^update/
         #TODO
       when /^select/
-        #TODO
+        select *args
       else
         super.method_missing
     end
