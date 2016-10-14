@@ -136,7 +136,7 @@ module SfdoAPI
       when /^create_/
         create obj_type, *args
       when /^select_api/
-        select *args
+        select_api *args
       when /^update/
         #TODO
       else
