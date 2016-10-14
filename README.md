@@ -34,7 +34,7 @@ To create a simple Account and get the ID for that Account:
   end
 ```
 
-You can also address the Restforce API client directly if you want, for example to issue a 'select' query:
+When issuing a SELECT query, use the select_api() method with your query:
 
 ```ruby
   def create_contact_via_api(client_name, street = '', city = '', state = '', country = '', zip = '')
@@ -44,11 +44,16 @@ You can also address the Restforce API client directly if you want, for example 
                                     MailingState: state,
                                     MailingCountry: country,
                                     MailingPostalCode: zip
-    account_object = @api_client.query("select AccountId from Contact where Id = '#{@contact_id}'")
+    account_object = select_api "select AccountId from Contact where Id = '#{@contact_id}'"
     my_account_object = account_object.first
     @account_id_for_contact = my_account_object.AccountId
   end
 ```
+
+When doing SELECT for a custom object, leave off any namespace value, SFDO-API retrieves the appropriate namespace at run time:
+```ruby
+      gaus = select_api 'select Id from General_Accounting_Unit__c'
+```      
 
 To delete a single instance of an object for which you have the Id value
 ```ruby
@@ -93,7 +98,7 @@ When using delete_one_foo or delete_all_foo do not use any namespace value, SFDO
 ```ruby
   def delete_gaus_via_api
     api_client do
-      gaus = @api_client.query("select Id from #{true_object_name('General_Accounting_Unit__c')}")
+            gaus = select_api 'select Id from General_Accounting_Unit__c'
 puts gaus.inspect
       delete_all_General_Accounting_Unit__c(gaus)
     end

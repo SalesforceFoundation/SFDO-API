@@ -21,6 +21,23 @@ module SfdoAPI
     obj_id
   end
 
+  def select_api(query)
+    if query.match /where/i
+      obj_name = query[/(?<=from )(.*)(?= where)|$/i]
+    else
+      obj_name = query[/(?<=from )(.*)$/i]
+    end
+
+    real_obj_name = true_object_name(obj_name)
+
+    query = query.gsub(obj_name, real_obj_name)
+
+   results = api_client do
+     @api_client.query query
+   end
+    results
+  end
+
   def is_valid_obj_hash?(object_name, obj_hash, fields_acceptibly_nil)
     required_fields = get_object_describe(object_name).map(&:fieldName)
     valid = true
@@ -118,9 +135,9 @@ module SfdoAPI
         delete obj_type, *args
       when /^create_/
         create obj_type, *args
+      when /^select_api/
+        select_api *args
       when /^update/
-        #TODO
-      when /^select/
         #TODO
       else
         super.method_missing
