@@ -22,29 +22,24 @@ module SfdoAPI
     obj_id
   end
 
-  def select(query)
-    #^SELECT.*
-    #given: "SELECT * FROM foo WHERE bar"
-    #then parse that into ["SELECT *", "FROM foo ", "WHERE Bar"];
-    #then gsub each worrd in FROM section against true obj name
-    #parts.join " "
-    #ap_client.query(parts.join " ")
-
+  def select_api(query)
     parser = SQLParser::Parser.new
     ast = parser.scan_str(query)
 
-    #binding.pry
+    #EXAMPLE QUERY IS "select Id from General_Accounting_Unit__c"
 
-    from = ast.query_expression.table_expression.from_clause.to_sql
+    obj_name = query[/(?<=from )(.*)/i]
+    #THIS WORKS BUT WILL INCLUDE ANYTHING AFTER THE TABLE NAME INCLUDING ANY WHERE CLAUSE
 
-    from_and_object = from.split(' ')
-    real_object_name = true_object_name(from_and_object[1])
+    real_object_name = true_object_name(obj_name)
+    #THIS PROPERLY RETURNS 'npsp__General_Accounting_Unit__c'
 
-    from.gsub(from.split(' ').last, real_object_name)
+    new_from_clause = SQLParser::Statement::FromClause.new(real_object_name)
+    #THIS MAKES A NEW BIT OF SQL
+    # pry(#<Object>)> new_from_clause = SQLParser::Statement::FromClause.new(real_object_name)
+    #=> #<SQLParser::Statement::FromClause:0x007f90cfa96cf0 @tables=["npsp__General_Accounting_Unit__c"]>
 
-    query = ast.select_clause.to_sql + from + ast.where_clause.to_sql
-
-    p query
+    #TODO: make a real query with the FromClause
 
    results = api_client do
      @api_client.select query
@@ -149,10 +144,10 @@ module SfdoAPI
         delete obj_type, *args
       when /^create_/
         create obj_type, *args
+      when /^select_api/
+        select *args
       when /^update/
         #TODO
-      when /^select/
-        select *args
       else
         super.method_missing
     end
