@@ -1,6 +1,5 @@
 require 'SFDO/API/version'
 require 'pry'
-require 'sql-parser'
 
 module SfdoAPI
 
@@ -23,26 +22,18 @@ module SfdoAPI
   end
 
   def select_api(query)
-    parser = SQLParser::Parser.new
-    ast = parser.scan_str(query)
+    if query.match /where/i
+      obj_name = query[/(?<=from )(.*)(?= where)|$/i]
+    else
+      obj_name = query[/(?<=from )(.*)$/i]
+    end
 
-    #EXAMPLE QUERY IS "select Id from General_Accounting_Unit__c"
+    real_obj_name = true_object_name(obj_name)
 
-    obj_name = query[/(?<=from )(.*)/i]
-    #THIS WORKS BUT WILL INCLUDE ANYTHING AFTER THE TABLE NAME INCLUDING ANY WHERE CLAUSE
-
-    real_object_name = true_object_name(obj_name)
-    #THIS PROPERLY RETURNS 'npsp__General_Accounting_Unit__c'
-
-    new_from_clause = SQLParser::Statement::FromClause.new(real_object_name)
-    #THIS MAKES A NEW BIT OF SQL
-    # pry(#<Object>)> new_from_clause = SQLParser::Statement::FromClause.new(real_object_name)
-    #=> #<SQLParser::Statement::FromClause:0x007f90cfa96cf0 @tables=["npsp__General_Accounting_Unit__c"]>
-
-    #TODO: make a real query with the FromClause
+    query = query.gsub(obj_name, real_obj_name)
 
    results = api_client do
-     @api_client.select query
+     @api_client.query query
    end
     results
   end
