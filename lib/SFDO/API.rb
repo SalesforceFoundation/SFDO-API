@@ -86,6 +86,7 @@ module SfdoAPI
     if @obj_names_without_namespace.nil? || !@obj_names_without_namespace.respond_to?(:contains)
       @obj_names_without_namespace = {}
       org_describe.each do |z|
+        #UPDATE THIS CALL TO BE AGNOSTIC TO '__c' or '__r'
         @obj_names_without_namespace.store(z.name.split("__",2).last, z.name)
       end
     end
