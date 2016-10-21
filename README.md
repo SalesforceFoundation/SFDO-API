@@ -50,12 +50,16 @@ When issuing a SELECT query, use the select_api() method with your query:
   end
 ```
 
-When doing SELECT for a custom object, leave off any namespace value, SFDO-API retrieves the appropriate namespace at run time:
+When doing operations for a custom object, leave off any namespace value at the front of the object name, and leave off any custom 
+trailer values like "__c" or "__r": SFDO-API retrieves the appropriate namespace and trailer values at run time. Instead of 
+addressing "npsp__General_Accounting_Unit__c" use plain "General_Accounting_Unit" instead
+
 ```ruby
-      gaus = select_api 'select Id from General_Accounting_Unit__c'
+      gaus = select_api 'select Id from General_Accounting_Unit'
 ```      
 
 To delete a single instance of an object for which you have the Id value
+
 ```ruby
   def delete_account_via_api
    delete_one_account(@account_id)
@@ -85,22 +89,24 @@ To delete all instances of an object
 
 ### Custom Objects
 
-To create instances of custom objects do not use any namespace value, SFDO-API does that for you
+To create instances of custom objects do not use any namespace value at the front of the object name, and leave off any custom 
+trailer values like "__c" or "__r, SFDO-API handles that for you. Instead of addressing "npsp__General_Accounting_Unit__c" 
+use plain "General_Accounting_Unit" instead:
 
 ```ruby
   def create_gau_via_api(gau_name)
-    @gau_id = create 'General_Accounting_Unit__c', Name: gau_name
+    @gau_id = create 'General_Accounting_Unit', Name: gau_name
   end
 ```
 
-When using delete_one_foo or delete_all_foo do not use any namespace value, SFDO-API does that for you
+When using delete_one_foo or delete_all_foo do not use any custom namespace value, SFDO-API does that for you
 
 ```ruby
   def delete_gaus_via_api
     api_client do
-            gaus = select_api 'select Id from General_Accounting_Unit__c'
+            gaus = select_api 'select Id from General_Accounting_Unit'
 puts gaus.inspect
-      delete_all_General_Accounting_Unit__c(gaus)
+      delete_all_General_Accounting_Unit(gaus)
     end
   end
 ```
