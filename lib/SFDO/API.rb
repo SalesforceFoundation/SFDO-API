@@ -73,24 +73,34 @@ module SfdoAPI
   end
 
   def true_object_name(handle) #either an ID or a string name
+    handle = (handle.end_with?("__c") || handle.end_with?("__r")) ? handle[0...-3] : handle
     from_id = prefix_to_name[handle[0..2]]
-    from_name = obj_names_without_namespace[handle]
+    from_name = obj_names_without_custom_additions[handle]
     if !from_name.nil? || !from_id.nil?
       return from_name if from_id.nil?
       return from_id if from_name.nil?
     end
-    return 'invalid'
+    return 'Unable to find object. Be sure to call SFDO-API without preceding namespace or following __c or __r'
   end
 
-  def obj_names_without_namespace
-    if @obj_names_without_namespace.nil? || !@obj_names_without_namespace.respond_to?(:contains)
-      @obj_names_without_namespace = {}
+  def obj_names_without_custom_additions
+    if @obj_names_without_custom_additions.nil? || !@obj_names_without_custom_additions.respond_to?(:contains)
+      @obj_names_without_custom_additions = {}
       org_describe.each do |z|
-        #UPDATE THIS CALL TO BE AGNOSTIC TO '__c' or '__r'
-        @obj_names_without_namespace.store(z.name.split("__",2).last, z.name)
+        tmp_var = z.name.split "__"
+        save = ""
+        case tmp_var.size
+          when 2
+            save = tmp_var.first
+          when 3
+            save = tmp_var[1]
+          else
+            save = tmp_var.last
+        end
+        @obj_names_without_custom_additions.store(save, z.name)
       end
     end
-    @obj_names_without_namespace
+    @obj_names_without_custom_additions
   end
 
   def get_object_describe(object_name)
