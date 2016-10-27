@@ -135,6 +135,10 @@ module SfdoAPI
     end
   end
 
+  def update_api(obj)
+    @api_client.update(obj.Id, obj)
+  end
+
   def method_missing(method_called, *args, &block)
     breakdown = method_called.to_s.split('_')
     obj_type = breakdown.last.capitalize
@@ -148,8 +152,6 @@ module SfdoAPI
         create obj_type, *args
       when /^select_api/
         select_api *args
-      when /^update/
-        #TODO
       else
         super.method_missing
     end
