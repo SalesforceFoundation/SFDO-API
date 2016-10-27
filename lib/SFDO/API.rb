@@ -136,7 +136,7 @@ module SfdoAPI
   end
 
   def update_api(obj)
-    @api_client.update(obj.Id, obj)
+    @api_client.update(obj.attributes.type, obj)
   end
 
   def method_missing(method_called, *args, &block)
