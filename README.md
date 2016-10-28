@@ -111,6 +111,27 @@ puts gaus.inspect
   end
 ```
 
+### SELECT and UPDATE actions with custom objects
+
+Use the select_api() and update_api() methods without namespaces or trailing characters.
+
+Issuing the select_api() call populates the entire object hash in restforce. Alter the value in the object hash you wish
+to change, then call update_api() with the altered version of the restforce object hash. 
+
+```ruby
+ def update_account_model(to_value)
+    api_client do
+      acc_id = select_api 'select Id from Contacts_And_Orgs_Settings'
+      acc = acc_id.first
+      acc.npe01__Account_Processor__c = to_value
+      update_api(acc)
+    end
+  end
+```
+
+Note that at this time, *fields* on objects with custom namespaces are not discovered automatically at runtime. 
+See TODO section below:
+
 ### Using objects where local override changes required fields
 
 Note that ISVs may override required fields on standard Salesforce objects, and these may be needed for SFDO-API to work properly
@@ -128,7 +149,6 @@ Note that ISVs may override required fields on standard Salesforce objects, and 
 Fields on namespaced object may be namespaced themselves. SFDO-API does not handle this case yet. 
 
 Custom fields on standard Salesforce objects may have namespaces. SFDO-API does not handle such fields yet. 
-
 
 ## Development
 
