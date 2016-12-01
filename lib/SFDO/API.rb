@@ -39,6 +39,8 @@ module SfdoAPI
   end
 
   def is_valid_obj_hash?(object_name, obj_hash, fields_acceptibly_nil)
+    #TODO Take incoming field names;parse out namespace/__c values; get true namespace for fields also
+    #TODO We do it from here because this is the only place we know about fields on objects
     required_fields = get_object_describe(object_name).map(&:fieldName)
     valid = true
     required_fields.each do |f|
@@ -136,7 +138,9 @@ module SfdoAPI
   end
 
   def update_api(obj)
-    @api_client.update(obj.attributes.type, obj)
+    api_client do
+      @api_client.update(obj.attributes.type, obj)
+    end
   end
 
   def method_missing(method_called, *args, &block)
