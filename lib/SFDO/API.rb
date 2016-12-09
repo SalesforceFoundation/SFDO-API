@@ -21,12 +21,26 @@ module SfdoAPI
     obj_id
   end
 
+  def true_field_name(field, obj)
+    if @full_describe[obj_name].nil?
+      @full_describe[obj_name] = get_object_describe(obj_name).map{|f| return f.name.gsub(/$.*__/,'').gsub(/__c^/,'') => f.name}
+    end
+    return @full_describe[obj][field]
+  end
+
   def select_api(query)
     if query.match /where/i
       obj_name = query[/(?<=from )(.*)(?= where)|$/i]
     else
       obj_name = query[/(?<=from )(.*)$/i]
     end
+
+     #query.scan /\w*\s*\s([a-zA-Z0-9_]*)/
+    # GET THE FIELDS!
+    query.split(' from ').first.scan /\w*\s*\s([a-zA-Z0-9_]*)/
+
+    binding.pry
+
 
     real_obj_name = true_object_name(obj_name)
 
@@ -41,8 +55,10 @@ module SfdoAPI
   def is_valid_obj_hash?(object_name, obj_hash, fields_acceptibly_nil)
     #TODO Take incoming field names;parse out namespace/__c values; get true namespace for fields also
     #TODO We do it from here because this is the only place we know about fields on objects
+    #binding.pry
     required_fields = get_object_describe(object_name).map(&:fieldName)
     valid = true
+    #binding.pry
     required_fields.each do |f|
 
       valid = false if (!obj_hash.key? f.to_sym) && (begin
@@ -108,7 +124,6 @@ module SfdoAPI
   def get_object_describe(object_name)
     api_client do
       @description = @api_client.get("/services/data/v35.0/sobjects/#{object_name}/describe")
-
       describeobject = Hashie::Mash.new(@description.body)
 
       required = describeobject.fields.map do |x|
