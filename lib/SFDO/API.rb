@@ -21,13 +21,6 @@ module SfdoAPI
     obj_id
   end
 
-  def true_field_name(field, obj)
-    if @full_describe[obj_name].nil?
-      @full_describe[obj_name] = get_object_describe(obj_name).map{|f| return f.name.gsub(/$.*__/,'').gsub(/__c^/,'') => f.name}
-    end
-    return @full_describe[obj][field]
-  end
-
   def select_api(query)
     if query.match /where/i
       obj_name = query[/(?<=from )(.*)(?= where)|$/i]
@@ -35,11 +28,19 @@ module SfdoAPI
       obj_name = query[/(?<=from )(.*)$/i]
     end
 
-     #query.scan /\w*\s*\s([a-zA-Z0-9_]*)/
-    # GET THE FIELDS!
-    query.split(' from ').first.scan /\w*\s*\s([a-zA-Z0-9_]*)/
+    #GET TRUE OBJECT NAME BEFORE GETTING TRUE FIELD NAMES
+    obj_name = true_object_name(obj_name)
 
-    binding.pry
+    # REMOVE NEWLINES IF ANY
+    query = query.gsub(/\n/,' ')
+    # REMOVE EXTRA SPACES
+    query = query.gsub(/\s{2,}/, ' ')
+    # GET FIELDS ONLY
+    fields_array = query.split(' from ').first.scan /\w*\s*\s([a-zA-Z0-9_]*)/
+
+    fields_array.each do |field|
+      true_field_name(field, obj_name)
+    end
 
 
     real_obj_name = true_object_name(obj_name)
@@ -88,6 +89,14 @@ module SfdoAPI
       end
     end
     return @prefix_to_name
+  end
+
+  def true_field_name(field, obj)
+    if @full_describe[obj].nil?
+      @full_describe[obj] = get_object_describe(obj).map{|f| return f.name.gsub(/$.*__/,'').gsub(/__c^/,'') => f.name}
+    end
+    binding.pry
+    return @full_describe[obj][field]
   end
 
   def true_object_name(handle) #either an ID or a string name
