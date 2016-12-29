@@ -29,7 +29,7 @@ module SfdoAPI
     end
 
     #GET TRUE OBJECT NAME BEFORE GETTING TRUE FIELD NAMES
-    obj_name = true_object_name(obj_name)
+    real_obj_name = true_object_name(obj_name)
 
     # REMOVE NEWLINES IF ANY
     query = query.gsub(/\n/,' ')
@@ -37,16 +37,15 @@ module SfdoAPI
     query = query.gsub(/\s{2,}/, ' ')
     # GET FIELDS ONLY
     fields_array = query.split(' from ').first.scan /\w*\s*\s([a-zA-Z0-9_]*)/
-
+#binding.pry
     fields_array.each do |field|
-      true_field_name(field, obj_name)
+      puts "this is field " + field.to_s
+      binding.pry
+      true_field_name(field, real_obj_name)
     end
 
-
-    real_obj_name = true_object_name(obj_name)
-
     query = query.gsub(obj_name, real_obj_name)
-
+#binding.pry
    results = api_client do
      @api_client.query query
    end
@@ -92,9 +91,10 @@ module SfdoAPI
   end
 
   def true_field_name(field, obj)
-    if @full_describe[obj].nil?
+    #if @full_describe[obj].nil?
+    binding.pry
       @full_describe[obj] = get_object_describe(obj).map{|f| return f.name.gsub(/$.*__/,'').gsub(/__c^/,'') => f.name}
-    end
+    #end
     binding.pry
     return @full_describe[obj][field]
   end
