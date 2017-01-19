@@ -40,7 +40,6 @@ module SfdoAPI
 #binding.pry
     fields_array.each do |field|
       puts "this is field " + field.to_s
-      binding.pry
       true_field_name(field, real_obj_name)
     end
 
@@ -55,10 +54,8 @@ module SfdoAPI
   def is_valid_obj_hash?(object_name, obj_hash, fields_acceptibly_nil)
     #TODO Take incoming field names;parse out namespace/__c values; get true namespace for fields also
     #TODO We do it from here because this is the only place we know about fields on objects
-    #binding.pry
-    required_fields = get_object_describe(object_name).map(&:fieldName)
+    required_fields = get_required_fields_on_object(object_name).map(&:fieldName)
     valid = true
-    #binding.pry
     required_fields.each do |f|
 
       valid = false if (!obj_hash.key? f.to_sym) && (begin
@@ -91,12 +88,18 @@ module SfdoAPI
   end
 
   def true_field_name(field, obj)
-    #if @full_describe[obj].nil?
+    puts "start of true_field_name"
     binding.pry
-      @full_describe[obj] = get_object_describe(obj).map{|f| return f.name.gsub(/$.*__/,'').gsub(/__c^/,'') => f.name}
-    #end
+
+    #FIX THIS LINE. IT DOES NOT RETURN THE PROPER RESULT
+    # THE 'return' IS PROBABLY THE CULPRIT
+    @full_describe[obj] = get_object_describe(obj).map{|f| return f.fieldName.gsub(/$.*__/,'').gsub(/__c^/,'') => f.fieldName}
+
     binding.pry
-    return @full_describe[obj][field]
+
+    puts "in true_field_name" + field
+
+    @full_describe[obj][field]
   end
 
   def true_object_name(handle) #either an ID or a string name
@@ -130,6 +133,13 @@ module SfdoAPI
     @obj_names_without_custom_additions
   end
 
+  def get_required_fields_on_object(obj_name)
+    if @full_describe[obj_name].nil?
+      @full_describe[obj_name] = get_object_describe(@full_describe)
+    end
+    @full_describe[obj_name].select(&:required)
+  end
+
   def get_object_describe(object_name)
     api_client do
       @description = @api_client.get("/services/data/v35.0/sobjects/#{object_name}/describe")
@@ -141,7 +151,7 @@ module SfdoAPI
             required: (!x.nillable && !x.defaultedOnCreate),
             default: x.defaultValue)
       end
-      required.select(&:required)
+        return required
     end
   end
 
