@@ -4,12 +4,20 @@ require 'pry'
 module SfdoAPI
 
   def api_client
+    if ENV['SF_ACCESS_TOKEN'] and ENV['SF_INSTANCE_URL']
+      @api_client ||= Restforce.new(oauth_token: ENV['SF_ACCESS_TOKEN'],
+                             instance_url: ENV['SF_INSTANCE_URL'],
+                             api_version: '32.0')
+      yield
+    else
     @api_client ||= Restforce.new api_version: '32.0',
                                   refresh_token: ENV['SF_REFRESH_TOKEN'],
                                   client_id: ENV['SF_CLIENT_KEY'],
                                   client_secret: ENV['SF_CLIENT_SECRET']
     yield
+    end
   end
+
 
   def create(type, obj_hash)
     type = true_object_name(type)
