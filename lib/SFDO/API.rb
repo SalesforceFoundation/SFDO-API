@@ -17,8 +17,7 @@ module SfdoAPI
     yield
     end
   end
-
-
+  
   def create(type, obj_hash)
     type = true_object_name(type)
     if is_valid_obj_hash?(type, obj_hash, @fields_acceptibly_nil)
