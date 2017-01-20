@@ -10,14 +10,14 @@ module SfdoAPI
                              api_version: '32.0')
       yield
     else
-    @api_client ||= Restforce.new api_version: '32.0',
+      @api_client ||= Restforce.new api_version: '32.0',
                                   refresh_token: ENV['SF_REFRESH_TOKEN'],
                                   client_id: ENV['SF_CLIENT_KEY'],
                                   client_secret: ENV['SF_CLIENT_SECRET']
     yield
     end
   end
-  
+
   def create(type, obj_hash)
     type = true_object_name(type)
     if is_valid_obj_hash?(type, obj_hash, @fields_acceptibly_nil)
