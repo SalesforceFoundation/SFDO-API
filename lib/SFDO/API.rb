@@ -100,11 +100,13 @@ module SfdoAPI
 
     #FIX THIS LINE. IT DOES NOT RETURN THE PROPER RESULT
     # THE 'return' IS PROBABLY THE CULPRIT
-    @full_describe[obj] = get_object_describe(obj).map{|f| return f.fieldName.gsub(/$.*__/,'').gsub(/__c^/,'') => f.fieldName}
+    # RUBY DOESN'T CHOKE ON THE SYNTAX BUT THIS IS NOT POPULATING @full_describe PROPERLY
+    #@full_describe[obj] = get_object_describe(obj).map{|f| return f.fieldName.gsub(/$.*__/,'').gsub(/__c^/,'') => f.fieldName}
 
-    binding.pry
+    #THIS REGEX IS CORRECT
+    @full_describe = get_object_describe(obj).map { |f| f.fieldName.gsub(/\A.*?__/,'').gsub(/__c\z/,'')}
 
-    puts "in true_field_name" + field
+    
 
     @full_describe[obj][field]
   end
