@@ -44,14 +44,14 @@ module SfdoAPI
     query = query.gsub(/\s{2,}/, ' ')
     # GET FIELDS ONLY
     fields_array = query.split(' from ').first.scan /\w*\s*\s([a-zA-Z0-9_]*)/
-#binding.pry
+
     fields_array.each do |field|
       puts "this is field " + field.to_s
       true_field_name(field, real_obj_name)
+      #HANDLE THE OUTPUT FROM true_field_name NOW THAT IT WORKS PROPERLY
     end
 
     query = query.gsub(obj_name, real_obj_name)
-#binding.pry
    results = api_client do
      @api_client.query query
    end
@@ -96,18 +96,24 @@ module SfdoAPI
 
   def true_field_name(field, obj)
     puts "start of true_field_name"
+
+    # See if we've done an object describe on the object
+    # If so, return the fields for the object
+    # Otherwise do an object describe, save the object description and return the fields with their real names
+    @full_describe = {} if @full_describe.nil?
+
+    if @full_describe[obj].nil?
+
+      object_description = get_object_describe(obj)
+      fields = object_description.map do |f|
+        substituted = f.fieldName.gsub(/\A.*?__/,'').gsub(/__c\z/,'')
+        output =  {substituted => f.fieldName}
+      end
+      #fields.reduce Hash.new, :merge
+      @full_describe[obj] = fields.reduce({}, :merge)
+    end
     binding.pry
-
-    #FIX THIS LINE. IT DOES NOT RETURN THE PROPER RESULT
-    # THE 'return' IS PROBABLY THE CULPRIT
-    # RUBY DOESN'T CHOKE ON THE SYNTAX BUT THIS IS NOT POPULATING @full_describe PROPERLY
-    #@full_describe[obj] = get_object_describe(obj).map{|f| return f.fieldName.gsub(/$.*__/,'').gsub(/__c^/,'') => f.fieldName}
-
-    #THIS REGEX IS CORRECT
-    @full_describe = get_object_describe(obj).map { |f| f.fieldName.gsub(/\A.*?__/,'').gsub(/__c\z/,'')}
-
-    
-
+    # RETURN THE REAL NAME FROM OUR HASH OF INPUT TO REAL NAMES
     @full_describe[obj][field]
   end
 
