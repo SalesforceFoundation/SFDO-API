@@ -19,6 +19,7 @@ module SfdoAPI
   end
 
   def create(type, obj_hash)
+    binding.pry
     type = true_object_name(type)
     if is_valid_obj_hash?(type, obj_hash, @fields_acceptibly_nil)
       obj_id = api_client do
@@ -47,11 +48,19 @@ module SfdoAPI
 
     fields_array.each do |field|
       puts "this is field " + field.to_s
-      true_field_name(field, real_obj_name)
-      #HANDLE THE OUTPUT FROM true_field_name NOW THAT IT WORKS PROPERLY
-    end
+      real_field = true_field_name(field, real_obj_name)
 
-    query = query.gsub(obj_name, real_obj_name)
+      #HANDLE THE OUTPUT FROM true_field_name NOW THAT IT WORKS PROPERLY
+
+      if obj_name != real_obj_name
+        query = query.gsub(/\b#{obj_name}\b/, real_obj_name)
+      end
+
+      if field[0] != real_field
+        query = query.gsub(field[0], real_field)
+      end
+
+    end
    results = api_client do
      @api_client.query query
    end
@@ -112,7 +121,6 @@ module SfdoAPI
       #fields.reduce Hash.new, :merge
       @full_describe[obj] = fields.reduce({}, :merge)
     end
-    binding.pry
     # RETURN THE REAL NAME FROM OUR HASH OF INPUT TO REAL NAMES
     @full_describe[obj][field[0]]
   end
@@ -149,6 +157,7 @@ module SfdoAPI
   end
 
   def get_required_fields_on_object(obj_name)
+    binding.pry
     if @full_describe[obj_name].nil?
       @full_describe[obj_name] = get_object_describe(@full_describe)
     end
