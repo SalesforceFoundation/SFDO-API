@@ -114,7 +114,7 @@ module SfdoAPI
     end
     binding.pry
     # RETURN THE REAL NAME FROM OUR HASH OF INPUT TO REAL NAMES
-    @full_describe[obj][field]
+    @full_describe[obj][field[0]]
   end
 
   def true_object_name(handle) #either an ID or a string name
