@@ -19,8 +19,14 @@ module SfdoAPI
   end
 
   def create(type, obj_hash)
-    binding.pry
+    true_fields = {}
+
     type = true_object_name(type)
+    obj_mash = Hashie::Mash.new obj_hash
+    obj_mash.map { |x, y| true_fields.store(true_field_name(x, type),y) }
+
+    binding.pry
+
     if is_valid_obj_hash?(type, obj_hash, @fields_acceptibly_nil)
       obj_id = api_client do
         @api_client.create! type, obj_hash
@@ -158,9 +164,16 @@ module SfdoAPI
 
   def get_required_fields_on_object(obj_name)
     binding.pry
+
+    @full_describe = {} if @full_describe.nil?
+
+    # THE CODE BELOW IS CALLING get_object_describe BUT IT'S NOT AN OBJECT IT'S A FIELD
+
     if @full_describe[obj_name].nil?
-      @full_describe[obj_name] = get_object_describe(@full_describe)
+      @full_describe[obj_name] = get_object_describe(obj_name)
     end
+
+    #MAKE THE CODE BELOW INTO A LOOP TO IGNORE THE 'Id' FIELD/PROPERTY
     @full_describe[obj_name].select(&:required)
   end
 
