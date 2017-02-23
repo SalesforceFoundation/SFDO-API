@@ -54,8 +54,6 @@ module SfdoAPI
       puts "this is field " + field.to_s
       real_field = true_field_name(field, real_obj_name)
 
-      #HANDLE THE OUTPUT FROM true_field_name NOW THAT IT WORKS PROPERLY
-
       if obj_name != real_obj_name
         query = query.gsub(/\b#{obj_name}\b/, real_obj_name)
       end
@@ -106,8 +104,6 @@ module SfdoAPI
   end
 
   def true_field_name(field, obj)
-    puts "start of true_field_name"
-
     # See if we've done an object describe on the object
     # If so, return the fields for the object
     # Otherwise do an object describe, save the object description and return the fields with their real names
@@ -123,8 +119,7 @@ module SfdoAPI
       #fields.reduce Hash.new, :merge
       @full_describe[obj] = fields.reduce({}, :merge)
     end
-
-    binding.pry
+    
     # RETURN THE REAL NAME FROM OUR HASH OF INPUT TO REAL NAMES
     @full_describe[obj][field]
   end
