@@ -116,10 +116,9 @@ module SfdoAPI
         substituted = f.fieldName.gsub(/\A.*?__/,'').gsub(/__c\z/,'')
         output =  {substituted => f.fieldName}
       end
-      #fields.reduce Hash.new, :merge
       @full_describe[obj] = fields.reduce({}, :merge)
     end
-    
+
     # RETURN THE REAL NAME FROM OUR HASH OF INPUT TO REAL NAMES
     @full_describe[obj][field]
   end
@@ -156,8 +155,6 @@ module SfdoAPI
   end
 
   def get_required_fields_on_object(obj_name)
-
-
     @object_fields = {} if @object_fields.nil?
 
     if @object_fields[obj_name].nil?
