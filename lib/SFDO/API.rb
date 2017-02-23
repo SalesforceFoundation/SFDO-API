@@ -25,11 +25,9 @@ module SfdoAPI
     obj_mash = Hashie::Mash.new obj_hash
     obj_mash.map { |x, y| true_fields.store(true_field_name(x, type),y) }
 
-    binding.pry
-
     if is_valid_obj_hash?(type, obj_hash, @fields_acceptibly_nil)
       obj_id = api_client do
-        @api_client.create! type, obj_hash
+        @api_client.create! type, true_fields
       end
     end
     obj_id
@@ -74,8 +72,6 @@ module SfdoAPI
   end
 
   def is_valid_obj_hash?(object_name, obj_hash, fields_acceptibly_nil)
-    #TODO Take incoming field names;parse out namespace/__c values; get true namespace for fields also
-    #TODO We do it from here because this is the only place we know about fields on objects
     required_fields = get_required_fields_on_object(object_name).map(&:fieldName)
     valid = true
     required_fields.each do |f|
@@ -127,8 +123,10 @@ module SfdoAPI
       #fields.reduce Hash.new, :merge
       @full_describe[obj] = fields.reduce({}, :merge)
     end
+
+    binding.pry
     # RETURN THE REAL NAME FROM OUR HASH OF INPUT TO REAL NAMES
-    @full_describe[obj][field[0]]
+    @full_describe[obj][field]
   end
 
   def true_object_name(handle) #either an ID or a string name
@@ -163,18 +161,15 @@ module SfdoAPI
   end
 
   def get_required_fields_on_object(obj_name)
-    binding.pry
 
-    @full_describe = {} if @full_describe.nil?
 
-    # THE CODE BELOW IS CALLING get_object_describe BUT IT'S NOT AN OBJECT IT'S A FIELD
+    @object_fields = {} if @object_fields.nil?
 
-    if @full_describe[obj_name].nil?
-      @full_describe[obj_name] = get_object_describe(obj_name)
+    if @object_fields[obj_name].nil?
+      @object_fields[obj_name] = get_object_describe(obj_name)
     end
 
-    #MAKE THE CODE BELOW INTO A LOOP TO IGNORE THE 'Id' FIELD/PROPERTY
-    @full_describe[obj_name].select(&:required)
+    @object_fields[obj_name].select(&:required)
   end
 
   def get_object_describe(object_name)
