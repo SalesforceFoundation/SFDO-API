@@ -23,6 +23,7 @@ module SfdoAPI
 
     type = true_object_name(type)
     obj_mash = Hashie::Mash.new obj_hash
+
     obj_mash.map { |x, y| true_fields.store(true_field_name(x, type),y) }
 
     if is_valid_obj_hash?(type, obj_hash, @fields_acceptibly_nil)
@@ -51,8 +52,8 @@ module SfdoAPI
     fields_array = query.split(' from ').first.scan /\w*\s*\s([a-zA-Z0-9_]*)/
 
     fields_array.each do |field|
-      puts "this is field " + field.to_s
-      real_field = true_field_name(field, real_obj_name)
+
+      real_field = true_field_name(field[0], real_obj_name)
 
       if obj_name != real_obj_name
         query = query.gsub(/\b#{obj_name}\b/, real_obj_name)
@@ -63,6 +64,7 @@ module SfdoAPI
       end
 
     end
+
    results = api_client do
      @api_client.query query
    end
