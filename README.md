@@ -128,7 +128,7 @@ custom trailer values like "__c" or "__r, SFDO-API handles that for you. Instead
     @contact_id = create 'Contact', LastName: contact_name, MailingCity: 'hhmailingcity', Household: @hh_obj_id
 ```
 
-### SELECT and UPDATE actions with custom objects
+### SELECT and UPDATE actions with custom objects and custom fields
 
 Use the select_api() and update_api() methods without namespaces or trailing characters.
 
