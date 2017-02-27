@@ -2,19 +2,18 @@ require 'SFDO/API/version'
 require 'pry'
 
 module SfdoAPI
-
   def api_client
-    if ENV['SF_ACCESS_TOKEN'] and ENV['SF_INSTANCE_URL']
+    if ENV['SF_ACCESS_TOKEN'] && ENV['SF_INSTANCE_URL']
       @api_client ||= Restforce.new(oauth_token: ENV['SF_ACCESS_TOKEN'],
-                             instance_url: ENV['SF_INSTANCE_URL'],
-                             api_version: '32.0')
+                                    instance_url: ENV['SF_INSTANCE_URL'],
+                                    api_version: '32.0')
       yield
     else
       @api_client ||= Restforce.new api_version: '32.0',
-                                  refresh_token: ENV['SF_REFRESH_TOKEN'],
-                                  client_id: ENV['SF_CLIENT_KEY'],
-                                  client_secret: ENV['SF_CLIENT_SECRET']
-    yield
+                                    refresh_token: ENV['SF_REFRESH_TOKEN'],
+                                    client_id: ENV['SF_CLIENT_KEY'],
+                                    client_secret: ENV['SF_CLIENT_SECRET']
+      yield
     end
   end
 
@@ -24,7 +23,7 @@ module SfdoAPI
     type = true_object_name(type)
     obj_mash = Hashie::Mash.new obj_hash
 
-    obj_mash.map { |x, y| true_fields.store(true_field_name(x, type),y) }
+    obj_mash.map { |x, y| true_fields.store(true_field_name(x, type), y) }
 
     if is_valid_obj_hash?(type, obj_hash, @fields_acceptibly_nil)
       obj_id = api_client do
@@ -41,18 +40,17 @@ module SfdoAPI
       obj_name = query[/(?<=from )(.*)$/i]
     end
 
-    #GET TRUE OBJECT NAME BEFORE GETTING TRUE FIELD NAMES
+    # GET TRUE OBJECT NAME BEFORE GETTING TRUE FIELD NAMES
     real_obj_name = true_object_name(obj_name)
 
     # REMOVE NEWLINES IF ANY
-    query = query.gsub(/\n/,' ')
+    query = query.gsub(/\n/, ' ')
     # REMOVE EXTRA SPACES
     query = query.gsub(/\s{2,}/, ' ')
     # GET FIELDS ONLY
     fields_array = query.split(' from ').first.scan /\w*\s*\s([a-zA-Z0-9_]*)/
 
     fields_array.each do |field|
-
       real_field = true_field_name(field[0], real_obj_name)
 
       if obj_name != real_obj_name
@@ -62,12 +60,11 @@ module SfdoAPI
       if field[0] != real_field
         query = query.gsub(field[0], real_field)
       end
-
     end
 
-   results = api_client do
-     @api_client.query query
-   end
+    results = api_client do
+      @api_client.query query
+    end
     results
   end
 
@@ -75,10 +72,9 @@ module SfdoAPI
     required_fields = get_required_fields_on_object(object_name).map(&:fieldName)
     valid = true
     required_fields.each do |f|
-
       valid = false if (!obj_hash.key? f.to_sym) && (begin
         !fields_acceptibly_nil[object_name].contains? f
-        puts 'This field must be populated in order to create this object in this environment: ' +  f.inspect
+        puts 'This field must be populated in order to create this object in this environment: ' + f.inspect
       rescue
         false
       end)
@@ -86,13 +82,13 @@ module SfdoAPI
     valid
   end
 
-  def org_describe()
+  def org_describe
     if @org_description.nil? || !@org_description.respond_to?(:contains)
       @org_description = api_client do
         @api_client.describe
       end
     end
-    return @org_description
+    @org_description
   end
 
   def prefix_to_name
@@ -102,7 +98,7 @@ module SfdoAPI
         @prefix_to_name.store(z.keyPrefix, z.name)
       end
     end
-    return @prefix_to_name
+    @prefix_to_name
   end
 
   def true_field_name(field, obj)
@@ -115,8 +111,8 @@ module SfdoAPI
 
       object_description = get_object_describe(obj)
       fields = object_description.map do |f|
-        substituted = f.fieldName.gsub(/\A.*?__/,'').gsub(/__c\z/,'')
-        output =  {substituted => f.fieldName}
+        substituted = f.fieldName.gsub(/\A.*?__/, '').gsub(/__c\z/, '')
+        { substituted => f.fieldName }
       end
       @full_describe[obj] = fields.reduce({}, :merge)
     end
@@ -125,30 +121,31 @@ module SfdoAPI
     @full_describe[obj][field]
   end
 
-  def true_object_name(handle) #either an ID or a string name
-    handle = (handle.end_with?("__c") || handle.end_with?("__r")) ? handle[0...-3] : handle
+  def true_object_name(handle) # either an ID or a string name
+    # handle = (handle.end_with?("__c") || handle.end_with?("__r")) ? handle[0...-3] : handle
+    handle.end_with?('__c', '__r') ? handle[0...-3] : handle
     from_id = prefix_to_name[handle[0..2]]
     from_name = obj_names_without_custom_additions[handle]
     if !from_name.nil? || !from_id.nil?
       return from_name if from_id.nil?
       return from_id if from_name.nil?
     end
-    return 'Unable to find object. Be sure to call SFDO-API without preceding namespace or following __c or __r'
+    'Unable to find object. Be sure to call SFDO-API without preceding namespace or following __c or __r'
   end
 
   def obj_names_without_custom_additions
     if @obj_names_without_custom_additions.nil? || !@obj_names_without_custom_additions.respond_to?(:contains)
       @obj_names_without_custom_additions = {}
       org_describe.each do |z|
-        tmp_var = z.name.split "__"
-        save = ""
+        tmp_var = z.name.split '__'
+        save = ''
         case tmp_var.size
-          when 2
-            save = tmp_var.first
-          when 3
-            save = tmp_var[1]
-          else
-            save = tmp_var.last
+        when 2
+          save = tmp_var.first
+        when 3
+          save = tmp_var[1]
+        else
+          save = tmp_var.last
         end
         @obj_names_without_custom_additions.store(save, z.name)
       end
@@ -173,15 +170,16 @@ module SfdoAPI
 
       required = describeobject.fields.map do |x|
         Hashie::Mash.new(
-            fieldName: x.name,
-            required: (!x.nillable && !x.defaultedOnCreate),
-            default: x.defaultValue)
+          fieldName: x.name,
+          required: (!x.nillable && !x.defaultedOnCreate),
+          default: x.defaultValue
+        )
       end
-        return required
+      return required
     end
   end
 
-  def delete(type, obj_id)
+  def delete(obj_id)
     delete_by_id(obj_id)
   end
 
@@ -208,19 +206,18 @@ module SfdoAPI
     obj_type = breakdown.last.capitalize
 
     case method_called.to_s
-      when /^delete_all_/
-        delete_all *args
-      when /^delete_one/
-        delete obj_type, *args
-      when /^create_/
-        create obj_type, *args
-      when /^select_api/
-        select_api *args
-      else
-        super.method_missing
+    when /^delete_all_/
+      delete_all *args
+    when /^delete_one/
+      delete obj_type, *args
+    when /^create_/
+      create obj_type, *args
+    when /^select_api/
+      select_api *args
+    else
+      super.method_missing
     end
   end
-
 end
 # INCLUDE HERE RATHER THAN IN THE PRODUCT-SPECIFIC CODE USING THIS GEM
 include SfdoAPI
