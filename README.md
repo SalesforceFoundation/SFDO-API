@@ -123,6 +123,11 @@ custom trailer values like "__c" or "__r, SFDO-API handles that for you. Instead
 "npsp__General_Accounting_Unit__c" use plain "General_Accounting_Unit" instead, and instead of the field 
 "npe01__Account_Processor__c" use just "Account_Processor"
 
+```ruby
+    #@contact_id = create 'Contact', LastName: contact_name, MailingCity: 'hhmailingcity', npo02__Household__c: @hh_obj_id
+    @contact_id = create 'Contact', LastName: contact_name, MailingCity: 'hhmailingcity', Household: @hh_obj_id
+```
+
 ### SELECT and UPDATE actions with custom objects
 
 Use the select_api() and update_api() methods without namespaces or trailing characters.
