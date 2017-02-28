@@ -1,6 +1,6 @@
 # SFDO::API
 
-SFDO-API is a convenient way to use the Salesforce API to manipulate objects in a target org. SFDO-API was intended orginally to
+SFDO-API is a convenient way to use the Salesforce API to manipulate objects and fields on objects in a target org. SFDO-API was intended orginally to
 facilitate the sharing of common API calls across multiple source repositories, but the project is evolving to provide powerful
 tools for handiling SF objects, like support for managed and unmanaged namespaces, multiple namespaces in an org, etc. 
 
@@ -58,6 +58,13 @@ addressing "npsp__General_Accounting_Unit__c" use plain "General_Accounting_Unit
       gaus = select_api 'select Id from General_Accounting_Unit'
 ```      
 
+Likewise, when addressing custom fields, leave off any namespace values for the fields involved
+
+```ruby
+      #@relationshiop_id = create 'Relationship', npe4__Contact__c: contact, npe4__RelatedContact__c: related_contact
+      @relationshiop_id = create 'Relationship', Contact: contact, RelatedContact: related_contact
+``` 
+
 To delete a single instance of an object for which you have the Id value
 
 ```ruby
@@ -111,7 +118,17 @@ puts gaus.inspect
   end
 ```
 
-### SELECT and UPDATE actions with custom objects
+Likewise when using custom fields on any object, do not use any namespace value at the front of the object name, and leave off any 
+custom trailer values like "__c" or "__r, SFDO-API handles that for you. Instead of addressing 
+"npsp__General_Accounting_Unit__c" use plain "General_Accounting_Unit" instead, and instead of the field 
+"npe01__Account_Processor__c" use just "Account_Processor"
+
+```ruby
+    #@contact_id = create 'Contact', LastName: contact_name, MailingCity: 'hhmailingcity', npo02__Household__c: @hh_obj_id
+    @contact_id = create 'Contact', LastName: contact_name, MailingCity: 'hhmailingcity', Household: @hh_obj_id
+```
+
+### SELECT and UPDATE actions with custom objects and custom fields
 
 Use the select_api() and update_api() methods without namespaces or trailing characters.
 
@@ -123,14 +140,12 @@ to change, then call update_api() with the altered version of the restforce obje
     api_client do
       acc_id = select_api 'select Id from Contacts_And_Orgs_Settings'
       acc = acc_id.first
-      acc.npe01__Account_Processor__c = to_value
+      #acc.npe01__Account_Processor__c = to_value
+      acc.Account_Processor = to_value
       update_api(acc)
     end
   end
 ```
-
-Note that at this time, *fields* on objects with custom namespaces are not discovered automatically at runtime. 
-See TODO section below:
 
 ### Using objects where local override changes required fields
 
@@ -146,9 +161,9 @@ Note that ISVs may override required fields on standard Salesforce objects, and 
 
 ### TODO
 
-Fields on namespaced object may be namespaced themselves. SFDO-API does not handle this case yet. 
-
-Custom fields on standard Salesforce objects may have namespaces. SFDO-API does not handle such fields yet. 
+At this time SFDO-API does not accept custom fields that are properly named. For example if a field is in fact named
+"npe01__Account_Processor__c" that field must be addressed as "Account_Processor" and will not function properly if the 
+calling code uses the properly namespaced value of the field.
 
 ## Development
 
