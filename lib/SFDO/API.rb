@@ -108,10 +108,17 @@ module SfdoAPI
     @full_describe = {} if @full_describe.nil?
 
     if @full_describe[obj].nil?
-
       object_description = get_object_describe(obj)
       fields = object_description.map do |f|
-        substituted = f.fieldName.gsub(/\A.*?__/, '').gsub(/__c\z/, '')
+
+        # MANAGED CODE
+        if f.fieldName.match /.*__.*__.*/
+          substituted = f.fieldName.gsub(/\A.*?__/, '').gsub(/__c\z/, '')
+        else
+          # UNMANAGED CODE
+          substituted = f.fieldName.gsub(/__c\z/, '')
+        end
+
         { substituted => f.fieldName }
       end
       @full_describe[obj] = fields.reduce({}, :merge)
