@@ -58,7 +58,7 @@ module SfdoAPI
       end
 
       if field[0] != real_field
-        query = query.gsub(field[0], real_field)
+        query = query.sub(field[0], real_field)
       end
     end
 
