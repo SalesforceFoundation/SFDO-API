@@ -6,10 +6,10 @@ module SfdoAPI
     if ENV['SF_ACCESS_TOKEN'] && ENV['SF_INSTANCE_URL']
       @api_client ||= Restforce.new(oauth_token: ENV['SF_ACCESS_TOKEN'],
                                     instance_url: ENV['SF_INSTANCE_URL'],
-                                    api_version: '32.0')
+                                    api_version: '33.0')
       yield
     else
-      @api_client ||= Restforce.new api_version: '32.0',
+      @api_client ||= Restforce.new api_version: '33.0',
                                     refresh_token: ENV['SF_REFRESH_TOKEN'],
                                     client_id: ENV['SF_CLIENT_KEY'],
                                     client_secret: ENV['SF_CLIENT_SECRET']
